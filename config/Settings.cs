@@ -59,7 +59,7 @@ public static class Settings
             else
             {
                 // Use the best model by default, and reduce the setup friction, particularly in VS Studio.
-                model = "text-davinci-003";
+                model = "gpt-3.5-turbo";
             }
         }
 
@@ -92,12 +92,12 @@ public static class Settings
         {
             if (useAzureOpenAI)
             {
-                apiKey = await InteractiveKernel.GetPasswordAsync("Please enter your Azure OpenAI API key");
+                apiKey = (await InteractiveKernel.GetPasswordAsync("Please enter your Azure OpenAI API key")).GetClearTextPassword();
                 orgId = "";
             }
             else
             {
-                apiKey = await InteractiveKernel.GetPasswordAsync("Please enter your OpenAI API key");
+                apiKey = (await InteractiveKernel.GetPasswordAsync("Please enter your OpenAI API key")).GetClearTextPassword();
             }
         }
 
@@ -131,16 +131,16 @@ public static class Settings
     public static (bool useAzureOpenAI, string model, string azureEndpoint, string apiKey, string orgId)
         LoadFromFile(string configFile = DefaultConfigFile)
     {
-        if (!File.Exists(DefaultConfigFile))
+        if (!File.Exists(configFile))
         {
-            Console.WriteLine("Configuration not found: " + DefaultConfigFile);
+            Console.WriteLine("Configuration not found: " + configFile);
             Console.WriteLine("\nPlease run the Setup Notebook (0-AI-settings.ipynb) to configure your AI backend first.\n");
             throw new Exception("Configuration not found, please setup the notebooks first using notebook 0-AI-settings.pynb");
         }
 
         try
         {
-            var config = JsonSerializer.Deserialize<Dictionary<string, string>>(File.ReadAllText(DefaultConfigFile));
+            var config = JsonSerializer.Deserialize<Dictionary<string, string>>(File.ReadAllText(configFile));
             bool useAzureOpenAI = config[TypeKey] == "azure";
             string model = config[ModelKey];
             string azureEndpoint = config[EndpointKey];
